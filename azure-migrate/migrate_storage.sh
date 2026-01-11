@@ -265,18 +265,18 @@ if [ "$VERIFY_ONLY" = true ]; then
   verify_migration "$SOURCE_CONFIG" "$TARGET_CONFIG"
 else
   # Get configuration
-  local src_sub=$(jq -r '.subscription' "$SOURCE_CONFIG")
-  local src_account=$(jq -r '.account_name' "$SOURCE_CONFIG")
-  local src_rg=$(jq -r '.resource_group' "$SOURCE_CONFIG")
+  src_sub=$(jq -r '.subscription' "$SOURCE_CONFIG")
+  src_account=$(jq -r '.account_name' "$SOURCE_CONFIG")
+  src_rg=$(jq -r '.resource_group' "$SOURCE_CONFIG")
 
-  local tgt_sub=$(jq -r '.subscription' "$TARGET_CONFIG")
-  local tgt_account=$(jq -r '.account_name' "$TARGET_CONFIG")
-  local tgt_rg=$(jq -r '.resource_group' "$TARGET_CONFIG")
+  tgt_sub=$(jq -r '.subscription' "$TARGET_CONFIG")
+  tgt_account=$(jq -r '.account_name' "$TARGET_CONFIG")
+  tgt_rg=$(jq -r '.resource_group' "$TARGET_CONFIG")
 
-  local containers=($(jq -r '.containers[]' "$SOURCE_CONFIG"))
+  containers=($(jq -r '.containers[]' "$SOURCE_CONFIG"))
 
-  local src_key=$(get_storage_key "$src_sub" "$src_account" "$src_rg")
-  local tgt_key=$(get_storage_key "$tgt_sub" "$tgt_account" "$tgt_rg")
+  src_key=$(get_storage_key "$src_sub" "$src_account" "$src_rg")
+  tgt_key=$(get_storage_key "$tgt_sub" "$tgt_account" "$tgt_rg")
 
   for container in "${containers[@]}"; do
     echo "=========================================="
