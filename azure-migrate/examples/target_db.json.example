@@ -1,0 +1,7 @@
+{
+  "subscription": "00000000-0000-0000-0000-000000000002",
+  "host": "psql-mycompany-staging.postgres.database.azure.com",
+  "username": "psqladmin",
+  "keyvault": "kv-mycompany-staging",
+  "databases": ["app_production", "analytics", "users"]
+}

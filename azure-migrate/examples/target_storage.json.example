@@ -1,0 +1,6 @@
+{
+  "subscription": "00000000-0000-0000-0000-000000000002",
+  "account_name": "stmycompanystaging",
+  "resource_group": "rg-mycompany-staging",
+  "containers": ["uploads", "static", "backups"]
+}

@@ -1,0 +1,6 @@
+{
+  "subscription": "00000000-0000-0000-0000-000000000001",
+  "account_name": "stmycompanyprod",
+  "resource_group": "rg-mycompany-prod",
+  "containers": ["uploads", "static", "backups"]
+}
