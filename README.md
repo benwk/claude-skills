@@ -22,19 +22,35 @@ Azure resource migration tool for PostgreSQL databases and Storage Accounts.
 
 ## Quick Start
 
-### Install all skills
+### One-Line Install (Recommended)
 ```bash
-git clone <your-repo-url> ~/claude-skills
+curl -fsSL https://raw.githubusercontent.com/benwk/claude-skills/main/quick-install.sh | bash
+```
+
+This will download and install all skills to `~/.claude/skills/` automatically.
+
+### Manual Install
+
+#### Install all skills
+```bash
+git clone https://github.com/benwk/claude-skills.git ~/claude-skills
 cd ~/claude-skills
 ./install.sh
 ```
 
-### Install specific skill
+#### Install specific skill
 ```bash
 ./install.sh azure-migrate
 ```
 
 ### Update skills
+
+**Quick update:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/benwk/claude-skills/main/quick-install.sh | bash
+```
+
+**Or if you cloned the repo:**
 ```bash
 cd ~/claude-skills
 git pull
