@@ -1,0 +1,9 @@
+{
+  "subscription": "00000000-0000-0000-0000-000000000001",
+  "registry_name": "myacrsource",
+  "repositories": [
+    "app/backend",
+    "app/frontend",
+    "app/worker"
+  ]
+}

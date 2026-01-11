@@ -6,6 +6,7 @@
 
 1. **migrate_postgresql.sh** - PostgreSQL数据库迁移工具
 2. **migrate_storage.sh** - Azure Storage Account迁移工具
+3. **migrate_acr.sh** - Azure Container Registry (ACR) 镜像迁移工具
 
 ## 安装
 
@@ -13,8 +14,10 @@
 # 将脚本移动到可执行路径
 sudo cp migrate_postgresql.sh /usr/local/bin/
 sudo cp migrate_storage.sh /usr/local/bin/
+sudo cp migrate_acr.sh /usr/local/bin/
 sudo chmod +x /usr/local/bin/migrate_postgresql.sh
 sudo chmod +x /usr/local/bin/migrate_storage.sh
+sudo chmod +x /usr/local/bin/migrate_acr.sh
 ```
 
 ## PostgreSQL迁移工具
@@ -123,12 +126,97 @@ migrate_storage.sh source_storage.json target_storage.json --skip-download --tem
 - `--temp-dir DIR` - 指定临时目录
 - `--help` - 显示帮助信息
 
+## Container Registry (ACR) 迁移工具
+
+### 功能
+- 支持基于时间的增量同步（只同步最近N天更新的镜像）
+- 智能跳过已存在的镜像
+- Diff模式预览差异
+- 详细的统计报告
+- 支持指定仓库或全量同步
+- 使用ACR Import API进行跨订阅迁移
+
+### 使用方法
+
+1. 创建源ACR配置文件 `source_acr.json`:
+```json
+{
+  "subscription": "00000000-0000-0000-0000-000000000001",
+  "registry_name": "myacrsource",
+  "repositories": ["app/backend", "app/frontend"]
+}
+```
+
+注意：`repositories` 字段是可选的。如果不指定，将同步所有仓库。
+
+2. 创建目标ACR配置文件 `target_acr.json`:
+```json
+{
+  "subscription": "00000000-0000-0000-0000-000000000002",
+  "registry_name": "myacrtarget"
+}
+```
+
+3. 执行迁移:
+```bash
+# 同步最近7天的镜像（默认）
+migrate_acr.sh source_acr.json target_acr.json
+
+# 同步最近3天的镜像
+migrate_acr.sh source_acr.json target_acr.json --days 3
+
+# 同步所有镜像
+migrate_acr.sh source_acr.json target_acr.json --all-images
+
+# 仅查看差异，不同步
+migrate_acr.sh source_acr.json target_acr.json --diff-only
+
+# 仅验证同步状态
+migrate_acr.sh source_acr.json target_acr.json --verify-only
+```
+
+### 命令选项
+
+- `--days N` - 只同步最近N天更新的镜像（默认：7）
+- `--all-images` - 同步所有镜像，不限时间
+- `--diff-only` - 只显示差异，不执行同步
+- `--verify-only` - 只验证同步状态，不执行同步
+- `--help` - 显示帮助信息
+
+### 使用场景
+
+**场景1：增量同步最新镜像**
+```bash
+# 每天定时任务，只同步最近24小时的镜像
+migrate_acr.sh source_acr.json target_acr.json --days 1
+```
+
+**场景2：初次全量迁移**
+```bash
+# 1. 先查看要迁移的镜像
+migrate_acr.sh source_acr.json target_acr.json --all-images --diff-only
+
+# 2. 确认后执行全量迁移
+migrate_acr.sh source_acr.json target_acr.json --all-images
+
+# 3. 验证迁移结果
+migrate_acr.sh source_acr.json target_acr.json --all-images --verify-only
+```
+
+**场景3：指定仓库同步**
+```bash
+# 只同步特定的repositories
+# 在配置文件中指定 "repositories": ["app/backend", "app/frontend"]
+migrate_acr.sh source_acr.json target_acr.json
+```
+
 ## 验证
 
-两个工具都包含内置验证功能：
+所有工具都包含内置验证功能：
 
 - **PostgreSQL**: 使用 `COUNT(*)` 准确统计所有表的行数并对比
 - **Storage Account**: 统计blob数量并对比
+- **Container Registry**: 统计镜像标签数量并对比，显示同步状态
 
 验证报告会在迁移完成后自动生成。
 
@@ -137,15 +225,26 @@ migrate_storage.sh source_storage.json target_storage.json --skip-download --tem
 ### 完整环境迁移
 
 ```bash
-# 1. 迁移数据库
+# 1. 迁移容器镜像
+migrate_acr.sh source_acr.json target_acr.json --all-images
+
+# 2. 迁移数据库
 migrate_postgresql.sh source_db.json target_db.json
 
-# 2. 迁移存储
+# 3. 迁移存储
 migrate_storage.sh source_storage.json target_storage.json
 
-# 3. 最终验证
+# 4. 最终验证
+migrate_acr.sh source_acr.json target_acr.json --verify-only
 migrate_postgresql.sh source_db.json target_db.json --verify-only
 migrate_storage.sh source_storage.json target_storage.json --verify-only
+```
+
+### 持续增量同步
+
+```bash
+# 定时任务：每天同步最新的容器镜像
+0 2 * * * /usr/local/bin/migrate_acr.sh /etc/azure-migrate/source_acr.json /etc/azure-migrate/target_acr.json --days 1
 ```
 
 ### 灾难恢复测试
