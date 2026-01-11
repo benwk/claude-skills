@@ -1,6 +1,6 @@
 ---
 name: azure-migrate
-description: Migrate Azure PostgreSQL databases and Storage Accounts between subscriptions/regions. Use when user asks to migrate databases, storage, or Azure resources between environments.
+description: Migrate Azure PostgreSQL databases, Storage Accounts, and Container Registry (ACR) images between subscriptions/regions. Use when user asks to migrate databases, storage, container images, or Azure resources between environments.
 user-invocable: true
 ---
 
@@ -73,11 +73,50 @@ You are helping with Azure resource migration using the migration tools bundled 
 - Automatically creates target containers if missing
 - File count verification
 
+### 3. Container Registry Migration (`migrate_acr.sh`)
+
+**Purpose**: Migrate Azure Container Registry (ACR) images between subscriptions/regions with time-based filtering
+
+**Usage**:
+```bash
+.claude/skills/azure-migrate/migrate_acr.sh <source_config.json> <target_config.json> [options]
+```
+
+**Options**:
+- `--days N` - Only sync images updated in last N days (default: 7)
+- `--all-images` - Sync all images regardless of age
+- `--diff-only` - Only show differences, don't sync
+- `--verify-only` - Only verify sync status, don't sync
+
+**Configuration Format** (JSON):
+```json
+{
+  "subscription": "subscription-id",
+  "registry_name": "myacrname",
+  "repositories": ["repo1", "repo2"]  // optional, if omitted will sync all
+}
+```
+
+**Features**:
+- Time-based filtering for incremental syncing (last N days)
+- Diff mode to preview changes before syncing
+- Smart deduplication - skips images already in target ACR
+- Repository filtering - sync specific repos or all
+- Detailed statistics (synced, skipped, failed counts)
+- Uses ACR Import API for secure cross-subscription migration
+
+**Common Use Cases**:
+- Incremental sync: `--days 3` for recent images only
+- Initial migration: `--all-images` for full sync
+- Preview changes: `--diff-only` before actual sync
+- Scheduled sync: Run daily with `--days 1` for continuous sync
+
 ## Example Configurations
 
 See `.claude/skills/azure-migrate/examples/` for sample configuration files:
 - `source_db.json.example` / `target_db.json.example` - Database examples
 - `source_storage.json.example` / `target_storage.json.example` - Storage examples
+- `source_acr.json.example` / `target_acr.json.example` - Container Registry examples
 
 Users should copy these `.example` files, remove the `.example` extension, and fill in their actual Azure resource details.
 
